@@ -30,10 +30,6 @@ module pe #(
 );
 
 
-    logic clk_psum_gated;
-
-    // AND gate: glitch-free gated clock
-    assign clk_psum_gated = clk & en_latched;
 
     // ── Registers ────────────────────────────────────────────────
     logic [ACC_W-1:0]           move_reg;
@@ -86,17 +82,16 @@ module pe #(
 
     // ── Psum accumulator — gated clock ───────────────────────────
     // clk_psum_gated active only when en=1 (CLEAR + COMPUTE).
-    // All other states: clock off, no switching in psum_out or its adder.
-    // en check inside body retained for lint/formal clarity — with the
-    // gated clock it is always true when the clock fires.
-    always_ff @(posedge clk_psum_gated or negedge rst_n) begin
+    // Synchronous clock enable replaces gated clock for synthesis compatibility.
+    always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             psum_out <= '0;
-        end // else if (en) begin not needed — en=1 whenever clk_psum_gated toggles
-        if (psum_clr)
-            psum_out <= '0;
-        else
-            psum_out <= psum_out + product;
+        end else if (en_latched) begin
+            if (psum_clr)
+                psum_out <= '0;
+            else
+                psum_out <= psum_out + product;
+        end
     end
 
     // ── Psum shift edge detect ────────────────────────────────────

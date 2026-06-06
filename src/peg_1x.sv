@@ -39,12 +39,6 @@ module peg_1x #(
     output logic [ACC_W-1:0]  psum_out0
 );
 
-    // ── Gated enable latch ───────────────────────────────────────
-    logic en_latched;
-    always_latch begin
-        if (~clk)
-            en_latched = en;
-    end
 
     // ── Direction decode (identical group mapping as 4×4) ───────
     // Group assignment:
@@ -179,7 +173,7 @@ module peg_1x #(
                     .w_in           (w_chain[r][c]),
                     .w_out          (w_chain[r+1][c]),
                     .psum_clr       (psum_clr),
-                    .en_latched     (en_latched)
+                    .en_latched     (en)
                 );
             end
         end
