@@ -226,7 +226,7 @@ module uart_peg_top #(
     logic                dut_psum_clr, dut_w_ld_en;
     logic [1:0]          dut_direction;
     logic [DATA_W-1:0]   dut_h_in0, dut_v_in0;
-    logic [WEIGHT_W-1:0] dut_w_in [0:COLS-1];
+    logic [COLS*WEIGHT_W-1:0] dut_w_in;  // packed: [1]=bits[3:2], [0]=bits[1:0]
 
     logic [ACC_W-1:0] psum_out0;
 
@@ -283,8 +283,7 @@ module uart_peg_top #(
             dut_direction     <= 2'b10;
             dut_h_in0         <= '0;
             dut_v_in0         <= '0;
-            dut_w_in[0]       <= '0;
-            dut_w_in[1]       <= '0;
+            dut_w_in          <= '0;
         end else begin
             tx_start <= 1'b0;   // default: no TX pulse
 
@@ -316,8 +315,8 @@ module uart_peg_top #(
                         dut_direction     <= pkt_b0[2:1];
                         dut_h_in0         <= pkt_b1[7:2];
                         dut_v_in0         <= {pkt_b1[1:0], rx_data[7:4]};
-                        dut_w_in[1]       <= rx_data[3:2];
-                        dut_w_in[0]       <= rx_data[1:0];
+                        dut_w_in[3:2]     <= rx_data[3:2];  // w_in[1]
+                        dut_w_in[1:0]     <= rx_data[1:0];  // w_in[0]
                         state             <= APPLY;
                     end
 

@@ -23,8 +23,8 @@ module peg_1x #(
     input  logic              psum_clr,
     input  logic              w_ld_en,
 
-    // ── Weight input — one per column, top-to-bottom chain ──────
-    input  logic [WEIGHT_W-1:0] w_in [0:COLS-1],
+    // ── Weight input — packed flat: w_in[c] = w_in[c*WEIGHT_W +: WEIGHT_W]
+    input  logic [COLS*WEIGHT_W-1:0] w_in,
 
     // ── Direction control ────────────────────────────────────────
     // Uses the same encoding as the 4×4 parent:
@@ -114,7 +114,7 @@ module peg_1x #(
     logic [WEIGHT_W-1:0] w_chain [0:ROWS][0:COLS-1];
     generate
         for (genvar c = 0; c < COLS; c++) begin : g_wchain_top
-            assign w_chain[0][c] = w_in[c];
+            assign w_chain[0][c] = w_in[c*WEIGHT_W +: WEIGHT_W];
         end
     endgenerate
 
