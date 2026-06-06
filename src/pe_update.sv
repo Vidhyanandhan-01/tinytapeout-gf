@@ -72,7 +72,7 @@ module pe #(
     assign w_out = w_buffer;
 
     // ── MAC ───────────────────────────────────────────────────────
-    logic unsigned [DATA_W-1:0]   act_val;
+    logic [DATA_W-1:0]   act_val;
     logic signed   [WEIGHT_W-1:0] w_val;
     logic signed   [ACC_W-1:0]    product;
 
@@ -114,7 +114,7 @@ module pe #(
     logic [ACC_W-1:0] act_out_val;
     always_comb begin
         if (first_shift)
-            act_out_val = ACC_W'(psum_out);
+            act_out_val = psum_out;
         else
             act_out_val = move_reg;
     end
@@ -127,7 +127,7 @@ module pe #(
                 if (psum_shift_en)
                     move_reg <= incoming;                   // full ACC_W: psum chain
                 else
-                    move_reg <= ACC_W'(incoming[DATA_W-1:0]); // zero-extend activation
+                    move_reg <= {{(ACC_W-DATA_W){1'b0}}, incoming[DATA_W-1:0]}; // zero-extend activation
         end
     end
 

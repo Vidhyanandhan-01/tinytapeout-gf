@@ -92,13 +92,7 @@ module peg_1x #(
         endcase
     end
 
-    // ── Group lookup (same parity rule as 4×4) ──────────────────
-    function automatic logic [1:0] grp(input int r, input int c);
-        if (r%2==0 && c%2==0) return 2'd0;
-        if (r%2==0 && c%2==1) return 2'd1;
-        if (r%2==1 && c%2==0) return 2'd2;
-        return 2'd3;
-    endfunction
+    // grp(r,c) = r*COLS+c — inlined directly at instantiation sites below.
 
     // ── Inter-PE wires ───────────────────────────────────────────
     logic [ACC_W-1:0] act_to_right  [0:ROWS-1][0:COLS-1];
@@ -139,7 +133,7 @@ module peg_1x #(
 
                 // right neighbour / boundary
                 assign act_from_right[r][c] =
-                    (r==1 && c==COLS-1) ? ACC_W'(h_in0) :  // PE[1][1] ← h_in0
+                    (r==1 && c==COLS-1) ? {{(ACC_W-DATA_W){1'b0}}, h_in0} :
                     (c == COLS-1)       ? '0
                                         : act_to_left[r][c+1];
 
@@ -150,7 +144,7 @@ module peg_1x #(
 
                 // lower neighbour / boundary
                 assign act_from_down[r][c] =
-                    (r==ROWS-1 && c==0) ? ACC_W'(v_in0) :  // PE[1][0] ← v_in0
+                    (r==ROWS-1 && c==0) ? {{(ACC_W-DATA_W){1'b0}}, v_in0} :
                     (r == ROWS-1)       ? '0               // remaining bottom = '0
                                         : act_to_up[r+1][c];
 
@@ -171,8 +165,8 @@ module peg_1x #(
                     .rst_n          (rst_n),
                     .move_en        (move_en),
                     .psum_shift_en  (psum_shift_en),
-                    .dst_sel        (dst_sel[grp(r,c)]),
-                    .src_sel        (src_sel[grp(r,c)]),
+                    .dst_sel        (dst_sel[r*COLS+c]),
+                    .src_sel        (src_sel[r*COLS+c]),
                     .act_from_left  (act_from_left [r][c]),
                     .act_from_right (act_from_right[r][c]),
                     .act_from_up    (act_from_up   [r][c]),
